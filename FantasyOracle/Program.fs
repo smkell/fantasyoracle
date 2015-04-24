@@ -1,30 +1,39 @@
-﻿open CommandLineParser 
-open FantasyOracle
+﻿/// Commands 
+/// query [player name] - get statistics for the given player
+/// team create [team name] [player name]* [categories]* - create a team with the given name, and players, outputs a file with [team name].json 
+/// team list [team name] - list current season statistics for the given team
+/// team query [team name] [player] - query a player's statistics in the context of the team (what has the player contributed)
+/// lineup set [team name] - set the lineup 
 
-let executeQueryCommand commandline =
-    if (List.length commandline.arguments) < 1 then
-        printfn "ERROR: Not enough arguments for command 'query'"
-        false
-    else 
-        let players = commandline.arguments |> List.map Baseball.queryPlayersByName |> List.concat
-                
-        Baseball.printPlayerTableHeader
-        for player in players do
-            Baseball.printPlayerTableRow player
-        Baseball.printPlayerTableFooter players
-
-        true
-
-let query = { name = "query"; cmd = executeQueryCommand }
-
-let commands = [ query ]
-let options = [ ]
+open FSharp.Data
 
 [<EntryPoint>]
 let main argv = 
-    printfn "%A" argv
-    let commandline = parse commands options (Array.toList argv)
+    let team = 
+        [
+            ("Yadier","Molina");
+            ("Anthony","Rizzo");
+            ("Ian","Kinsler");
+            ("Nolan","Arenado");
+            ("Starlin","Castro");
+            ("Daniel","Murphy");
+            ("Evan","Longoria");
+            ("Yasiel","Puig");
+            ("Corey","Dickerson");
+            ("Matt","Holliday");
+            ("Andrew","McCutchen");
+            ("Kyle","Seager");
+            ("Joey","Votto");
+            ("Adam","LaRoche");
+            ("Evan","Gattis");
+            ("Eric","Hosmer");
+        ]
+
+    team
+    |> List.map Baseball.fetchPlayerByName
+    |> Common.caculateContributions ["R";"HR";"XBH";"TB";"RBI";"SB";"AVG";"OBP"]
+    |> Baseball.printPlayersContribTable
+    |> ignore
+
+    0
     
-    for cmd in commandline.commands do 
-        printfn "%b" (cmd.cmd commandline)
-    0 // return an integer exit code
